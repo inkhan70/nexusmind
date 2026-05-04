@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusMind AI Pro</title>
+<style>
+    body {margin:0;background:#0d0d0d;color:white;font-family:Arial;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+    .header {background:#1a472a;padding:15px;text-align:center;font-size:18px;flex-shrink:0;border-bottom:2px solid #4CAF50;}
+    .chat {flex-grow:1;overflow-y:auto;padding:10px;background:#000;}
+    .msg {margin:10px 0; padding:8px; border-radius:5px; word-wrap: break-word;}
+    .user {color:#4CAF50; border-left: 3px solid #4CAF50; background: #0a1a0a;}
+    .ai {color:#ffffff; border-left: 3px solid #ffffff; background: #1a1a1a;}
+    .controls {padding:10px;background:#111;flex-shrink:0;border-top:1px solid #333;}
+    .row {display:flex; gap:5px; margin-bottom:8px;}
+    input, select {padding:12px; flex:1; background:#222; color:white; border:1px solid #444; border-radius:4px; font-size:14px;}
+    button {background:#4CAF50;color:white;border:none;padding:10px 15px;cursor:pointer;border-radius:4px;font-weight:bold;}
+    .btn-icon {background:#444; font-size: 18px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+    🧬 NexusMind AI PRO  
+    <br><small>Created by Cluster_Lab</small>
+</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="controls">
+    <div class="row">
+        <select id="ai">
+            <option value="gemini">Google Gemini</option>
+            <option value="openai">OpenAI (GPT-4o)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="groq">Groq (Llama 3)</option>
+            <option value="mistral">Mistral AI</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="cohere">Cohere</option>
+            <option value="perplexity">Perplexity</option>
+            <option value="huggingface">Hugging Face</option>
+            <option value="openrouter">OpenRouter</option>
+        </select>
+        </div>
+    <div class="row">
+        <input id="msg" placeholder="Type message...">
+        <button onclick="send()">Send</button>
+        <button class="btn-icon" onclick="voice()">🎤</button>
+        <button class="btn-icon" onclick="clearChat()">🗑</button>
+    </div>
+</div>
+
+<script>
+let chat = document.getElementById("chat");
+chat.innerHTML = localStorage.getItem("chat") || '<div class="msg ai">Welcome to NexusMind. Secure connection established.</div>';
+
+function saveChat(){ localStorage.setItem("chat", chat.innerHTML); }
+
+async function send(){
+    let msg = document.getElementById("msg").value;
+    let ai = document.getElementById("ai").value;
+
+    if(!msg) return alert("Please enter a message.");
+
+    // Add User Message
+    chat.innerHTML += `<div class="msg user"><b>You:</b><br>${msg}</div>`;
+    let aiMsgDiv = document.createElement("div");
+    aiMsgDiv.className = "msg ai";
+    aiMsgDiv.innerHTML = "<b>NexusMind:</b> Thinking...";
+    chat.appendChild(aiMsgDiv);
+    chat.scrollTop = chat.scrollHeight;
+    document.getElementById("msg").value = "";
+
+    try {
+        // SECURITY UPDATE: We now send the request to your local server
+        const response = await fetch("http://localhost:3000/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                message: msg, 
+                aiType: ai 
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) throw new Error(data.error);
+
+        let reply = data.reply;
+        aiMsgDiv.innerHTML = `<b>NexusMind (${ai.toUpperCase()}):</b><br>${reply}`;
+        speak(reply);
+    } catch(e) {
+        aiMsgDiv.innerHTML = "<b>Error:</b> Could not reach the secure server. Make sure server.js is running.";
+        console.error(e);
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+    saveChat();
+}
+
+function speak(text){
+    let s = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(s);
+}
+
+function voice(){
+    let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition) return alert("Voice not supported on this browser.");
+    let rec = new SpeechRecognition();
+    rec.start();
+    rec.onresult = e => { document.getElementById("msg").value = e.results[0][0].transcript; };
+}
+
+function clearChat(){
+    if(confirm("Clear conversation?")) {
+        chat.innerHTML = "";
+        localStorage.removeItem("chat");
+    }
+}
+</script>
+</body>
+</html>
