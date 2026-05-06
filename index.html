@@ -72,12 +72,11 @@ async function send(){
 
     try {
         // SECURITY UPDATE: We now send the request to your local server
-        const response = await fetch("/api/chat", { 
+       const response = await fetch("/api/chat", { 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message: msg, aiType: ai })
 });
-
         const data = await response.json();
         
         if (data.error) throw new Error(data.error);
