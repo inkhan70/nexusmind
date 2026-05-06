@@ -21,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
         let reply = "";
         
         if (aiType === "gemini") {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_KEY}`;
+           const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_KEY}`;
             const response = await axios.post(url, {
                 contents: [{ parts: [{ text: message }] }]
             });
