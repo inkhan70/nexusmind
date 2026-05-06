@@ -72,10 +72,11 @@ async function send(){
 
     try {
         // SECURITY UPDATE: We now send the request to your local server
-       const response = await fetch("/api/chat", { 
+      // Change your fetch line to look exactly like this:
+const response = await fetch("/api/chat", { 
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: msg, aiType: ai })
+    body: JSON.stringify({ message: userText, aiType: selectedAI })
 });
         const data = await response.json();
         
